@@ -10,7 +10,8 @@ Pokébound, like many ROM hacks, is built with the IPS patches! If you'd like to
 
 ## HOWEVER
 
-**Pokébound is NOT a finished project! But _YOU_ can help!**
+> [!WARNING]
+> **Pokébound is NOT a finished project! But _YOU_ can help!**
 
 Be it through sharing the project or writing dialogue/code yourself, you can help!
 
@@ -20,4 +21,4 @@ Pokébound has an [official Discord server](https://discord.gg/wafrb3GuNp) for c
 
 ### Contributing
 
-This project is community-based, so [feel free to contribute!](/CONTRIBUTING.md)
+This project is community-based, so [feel free to contribute](/CONTRIBUTING.md)!
