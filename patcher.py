@@ -14,7 +14,7 @@ with open("exclusions.json", "r") as exclusions_json:
 
 
 # Display functions
-delay = False
+delay = True
 
 
 def display(text: str):

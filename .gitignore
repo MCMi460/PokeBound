@@ -1,3 +1,15 @@
 # Copyrighted content
 canonical/*/*/*.txt
 translation/
+*.nds
+*.narc
+
+# PPTXT
+PPTXT.exe
+QtCore4.dll
+QtGui4.dll
+mingwm10.dll
+libgcc_s_sjlj-1.dll
+
+# Nitro Explorer 2
+NitroExplorer2b.exe
