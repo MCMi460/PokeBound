@@ -1,13 +1,14 @@
-from json import loads
+from json import loads as json_loads
 from time import sleep
 from os.path import exists, join
-from os import listdir, remove
+from os import system, name, listdir, remove
 from filecmp import cmp
-from difflib import unified_diff
 from shutil import copytree
+from diff_match_patch import diff_match_patch
+from pickle import dumps, loads
 
 with open("exclusions.json", "r") as exclusions_json:
-    exclusions = loads(exclusions_json.read())
+    exclusions = json_loads(exclusions_json.read())
     exclude_story_files = exclusions["story"]
     exclude_system_files = exclusions["system"]
 
@@ -33,6 +34,10 @@ def wait():
         delay = False
 
 
+def clear():
+    system("cls" if name == "nt" else "clear")
+
+
 # Validate canonical tree
 def validate(tree: str = "canonical"):
     assert all(
@@ -53,14 +58,18 @@ def validate(tree: str = "canonical"):
 
 # Patcher functions
 
+dmp = diff_match_patch()
+
 
 def generate_patches():
     validate()
     validate("translation")
     for file in listdir("canonical/story/0000"):
-        can = join("canonical/story/0000", file)
-        trn = join("translation/story/0000", file)
-        ptc = join("patches/story/0000", file.replace(".txt", ".patch"))
+        can = join("canonical/story/0000", file).replace("\\", "/")
+        trn = join("translation/story/0000", file).replace("\\", "/")
+        ptc = join("patches/story/0000", file.replace(".txt", ".patch")).replace(
+            "\\", "/"
+        )
         if file.startswith("."):
             continue
         if cmp(can, trn):
@@ -69,18 +78,42 @@ def generate_patches():
             continue
 
         with open(can, "r", encoding="utf8") as src:
-            src_lines = src.readlines()
+            src_text = src.read()
         with open(trn, "r", encoding="utf8") as mod:
-            mod_lines = mod.readlines()
+            mod_text = mod.read()
 
-        diff = unified_diff(src_lines, mod_lines, fromfile=can, tofile=trn)
+        diff = dmp.diff_main(src_text, mod_text)
+        dmp.diff_cleanupSemantic(diff)
 
-        with open(ptc, "w+", encoding="utf8") as dst:
-            dst.writelines(diff)
+        patch = dmp.patch_make(src_text, diff)
+
+        with open(ptc, "wb+") as dst:
+            dst.write(dumps(patch))
 
 
 def apply_patches():
-    pass
+    validate()
+    validate("translation")
+    for file in listdir("patches/story/0000"):
+        can = join("canonical/story/0000", file.replace(".patch", ".txt")).replace(
+            "\\", "/"
+        )
+        trn = join("translation/story/0000", file.replace(".patch", ".txt")).replace(
+            "\\", "/"
+        )
+        ptc = join("patches/story/0000", file).replace("\\", "/")
+        if file.startswith("."):
+            continue
+
+        with open(can, "r", encoding="utf8") as src:
+            src_text = src.read()
+        with open(ptc, "rb") as mod:
+            patch = loads(mod.read())
+
+        mod_text = dmp.patch_apply(patch, src_text)[0]
+
+        with open(trn, "w+", encoding="utf8") as dst:
+            dst.write(mod_text)
 
 
 # User interface functions
@@ -129,12 +162,15 @@ def intro():
 def menu():
     inp = ""
     while inp != "0":
+        clear()
         match inp:
             case "1":
                 generate_patches()
+            case "2":
+                apply_patches()
             case _:
                 pass
-        print("MENU:\n" + "1: Generate patches\n" + "0: Exit")
+        print("MENU:\n" + "1: Generate patches\n" + "2: Apply patches\n" + "0: Exit")
         inp = input("> ")
 
 
