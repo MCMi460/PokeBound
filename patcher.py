@@ -3,7 +3,7 @@ from time import sleep
 from os.path import exists, join
 from os import system, name, listdir, remove
 from filecmp import cmp
-from shutil import copytree
+from shutil import rmtree, copytree
 from diff_match_patch import diff_match_patch
 from pickle import dumps, loads
 
@@ -38,7 +38,9 @@ def clear():
     system("cls" if name == "nt" else "clear")
 
 
-# Validate canonical tree
+# Validation functions
+
+
 def validate(tree: str = "canonical"):
     assert all(
         [
@@ -54,6 +56,12 @@ def validate(tree: str = "canonical"):
             if file not in exclude_system_files
         ]
     )
+
+
+def reset_translations():
+    validate()
+    rmtree("translation/")
+    copytree("canonical/", "translation/")
 
 
 # Patcher functions
@@ -91,7 +99,7 @@ def generate_patches():
             dst.write(dumps(patch))
 
 
-def apply_patches():
+def apply_patches():  # Warning: Does NOT revert existing changes if no patch file exists
     validate()
     validate("translation")
     for file in listdir("patches/story/0000"):
@@ -168,9 +176,17 @@ def menu():
                 generate_patches()
             case "2":
                 apply_patches()
+            case "3":
+                reset_translations()
             case _:
                 pass
-        print("MENU:\n" + "1: Generate patches\n" + "2: Apply patches\n" + "0: Exit")
+        print(
+            "MENU:\n"
+            + "1: Generate patches\n"
+            + "2: Apply patches\n"
+            + "3: Reset existing translations (does not affect patches)\n"
+            + "0: Exit"
+        )
         inp = input("> ")
 
 
