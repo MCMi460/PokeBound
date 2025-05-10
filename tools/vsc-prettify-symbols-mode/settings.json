@@ -1,0 +1,108 @@
+{
+    "files.insertFinalNewline": true,
+    "prettifySymbolsMode.substitutions": [
+
+        
+        {
+            "language": [
+                {
+                    "pattern": "**/*.txt"
+                }
+            ],
+            "substitutions": [
+                /* Taken from projectpokemon's translation documentation */
+
+                /* Line Breaks */
+
+                { // Prints new line after next.
+                    "ugly": "\\\\xfffe",
+                    "pretty": " ↩ "
+                },
+                { // Prints text at max speed.
+                    "ugly": "\\\\xf000븅\\\\x0001\\\\x0001",
+                    "pretty": " ⏩ "
+                },
+                { // Wait till (A) is pressed. If another line of text is after, starts another dialog box.
+                    "ugly": "\\\\xf000븁\\\\x0000",
+                    "pretty": " ✕ "
+                },
+                { // Wait till (A) is pressed. If another line of text is after, display next line, "\xfffe" is not needed.
+                    "ugly": "\\\\xf000븀\\\\x0000",
+                    "pretty": " ▼ "
+                },
+
+                /* Text Alignments */
+
+                { // Center
+                    "ugly": "\\\\xf000봂\\\\x0001\\\\x0000",
+                    "pretty": " 𝕋— "
+                },
+                { // Right Align
+                    "ugly": "\\\\xf000봃\\\\x0001\\\\x0000",
+                    "pretty": " 𝕋→ "
+                },
+
+                /* Color */
+
+                // Top Color / Shadow Color (Odd numbers are lighter then even ones.)
+                { // Default
+                    "ugly": "\\\\xf000봀\\\\x0003\\\\x0001\\\\x0002\\\\x0000",
+                    "pretty": " 𝕊✕ "
+                },
+                { // Cyan
+                    "ugly": "\\\\xf000봀\\\\x0003\\\\x0003\\\\x0004\\\\x0000",
+                    "pretty": " 𝕊🔵 "
+                },
+                { // Red
+                    "ugly": "\\\\xf000봀\\\\x0003\\\\x0005\\\\x0006\\\\x0000",
+                    "pretty": " 𝕊🔴 "
+                },
+                { // Black
+                    "ugly": "\\\\xf000봀\\\\x0003\\\\x0007\\\\x0008\\\\x0000",
+                    "pretty": " 𝕊• "
+                },
+
+                // Text Color
+                { // Black
+                    "ugly": "\\\\xf000\\\\xff00\\\\x0001\\\\x0000",
+                    "pretty": " ℂ• "
+                },
+                { // Red
+                    "ugly": "\\\\xf000\\\\xff00\\\\x0001\\\\x0001",
+                    "pretty": " ℂ🔵 "
+                },
+                { // Blue
+                    "ugly": "\\\\xf000\\\\xff00\\\\x0001\\\\x0002",
+                    "pretty": " ℂ🔴 "
+                },
+                { // Yellow
+                    "ugly": "\\\\xf000\\\\xff00\\\\x0001\\\\x0003",
+                    "pretty": " ℂ🟡 "
+                },
+                { // Green
+                    "ugly": "\\\\xf000\\\\xff00\\\\x0001\\\\x0004",
+                    "pretty": " ℂ🟢 "
+                },
+
+                /* Other */
+                { // Adds small delay.
+                    "ugly": "\\\\xf000븂\\\\x0001\\\\x0014",
+                    "pretty": "…"
+                },
+
+
+                /* My (MCMi460) additions */
+                { // Main character's chosen name
+                    "ugly": "\\\\xf000Ā\\\\x0001\\\\x0000",
+                    "pretty": "MC",
+                    "style": { "textDecoration": "underline" }
+                },
+                { // Rival's chosen name
+                    "ugly": "\\\\xf000Ā\\\\x0001\\\\x0001",
+                    "pretty": "Rival",
+                    "style": { "textDecoration": "underline" }
+                }
+            ]
+        }
+    ]
+}
