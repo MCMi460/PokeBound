@@ -72,56 +72,65 @@ dmp = diff_match_patch()
 def generate_patches():
     validate()
     validate("translation")
-    for file in listdir("canonical/story/0000"):
-        can = join("canonical/story/0000", file).replace("\\", "/")
-        trn = join("translation/story/0000", file).replace("\\", "/")
-        ptc = join("patches/story/0000", file.replace(".txt", ".patch")).replace(
-            "\\", "/"
-        )
-        if file.startswith("."):
-            continue
-        if cmp(can, trn):
-            if exists(ptc):
-                remove(ptc)
-            continue
+    for text_type in ("story", "system"):
+        print("%s:" % text_type)
+        n = 0
+        for file in listdir("canonical/%s/0000" % text_type):
+            patch_name = file.replace(".txt", ".patch")
+            can = join("canonical/%s/0000" % text_type, file).replace("\\", "/")
+            trn = join("translation/%s/0000" % text_type, file).replace("\\", "/")
+            ptc = join("patches/%s/0000" % text_type, patch_name).replace("\\", "/")
+            if file.startswith("."):
+                continue
+            if cmp(can, trn):
+                if exists(ptc):
+                    remove(ptc)
+                    print(" - %s" % patch_name)
+                continue
 
-        with open(can, "r", encoding="utf8") as src:
-            src_text = src.read()
-        with open(trn, "r", encoding="utf8") as mod:
-            mod_text = mod.read()
+            with open(can, "r", encoding="utf8") as src:
+                src_text = src.read()
+            with open(trn, "r", encoding="utf8") as mod:
+                mod_text = mod.read()
 
-        diff = dmp.diff_main(src_text, mod_text)
-        dmp.diff_cleanupSemantic(diff)
+            diff = dmp.diff_main(src_text, mod_text)
+            dmp.diff_cleanupSemantic(diff)
 
-        patch = dmp.patch_make(src_text, diff)
+            patch = dmp.patch_make(src_text, diff)
 
-        with open(ptc, "wb+") as dst:
-            dst.write(dumps(patch))
+            with open(ptc, "wb+") as dst:
+                dst.write(dumps(patch))
+
+            print(" + %s" % patch_name)
+            n += 1
+        if n == 0:
+            print(" ~")
 
 
 def apply_patches():  # Warning: Does NOT revert existing changes if no patch file exists
     validate()
     validate("translation")
-    for file in listdir("patches/story/0000"):
-        can = join("canonical/story/0000", file.replace(".patch", ".txt")).replace(
-            "\\", "/"
-        )
-        trn = join("translation/story/0000", file.replace(".patch", ".txt")).replace(
-            "\\", "/"
-        )
-        ptc = join("patches/story/0000", file).replace("\\", "/")
-        if file.startswith("."):
-            continue
+    for text_type in ("story", "system"):
+        for file in listdir("patches/%s/0000" % text_type):
+            can = join(
+                "canonical/%s/0000" % text_type, file.replace(".patch", ".txt")
+            ).replace("\\", "/")
+            trn = join(
+                "translation/%s/0000" % text_type, file.replace(".patch", ".txt")
+            ).replace("\\", "/")
+            ptc = join("patches/%s/0000" % text_type, file).replace("\\", "/")
+            if file.startswith("."):
+                continue
 
-        with open(can, "r", encoding="utf8") as src:
-            src_text = src.read()
-        with open(ptc, "rb") as mod:
-            patch = loads(mod.read())
+            with open(can, "r", encoding="utf8") as src:
+                src_text = src.read()
+            with open(ptc, "rb") as mod:
+                patch = loads(mod.read())
 
-        mod_text = dmp.patch_apply(patch, src_text)[0]
+            mod_text = dmp.patch_apply(patch, src_text)[0]
 
-        with open(trn, "w+", encoding="utf8") as dst:
-            dst.write(mod_text)
+            with open(trn, "w+", encoding="utf8") as dst:
+                dst.write(mod_text)
 
 
 # User interface functions
