@@ -26,10 +26,10 @@ class DataStream(BytesIO):
         return int(unpack("<?", super().read(1))[0])
 
     def read16(self):
-        return unpack("<h", super().read(2))[0]
+        return unpack("<H", super().read(2))[0]
 
     def read32(self):
-        return unpack("<i", super().read(4))[0]
+        return unpack("<I", super().read(4))[0]
 
 
 class Narc:
@@ -37,8 +37,9 @@ class Narc:
         assert isfile(path)
         with open(path, "rb") as file:
             self.data = DataStream(file.read())
+        self.read()
 
-    def __rshift__(self, other):  # >>, read
+    def read(self):
         self.fileData = []
         self.data.seek(0)
         self.magic = self.data.read32()
@@ -65,26 +66,20 @@ class Narc:
             size = self.endOffsets[i] - self.startOffsets[i]
             temp = [None] * size
             self.fileData.append(DataStream())
-            # self.fileData.append(temp)
             for j in range(size):
-                # self.fileData[i][j] = self.data.read8()
                 self.fileData[i].write(self.data.read(1))
             for j in range((4 - (size % 4)) % 4):
                 self.data.read8()
         return self.data
 
-    def __lshift__(self, other):  # <<, store
+    def store(self):
         pass
 
 
 # Top-level
 
 
-def get_strings(
-    narc: Narc, m: int, i: int
-) -> typing.List[
-    str
-]:  # This does NOT work, and the worst part is how difficult it will be to find the error.
+def get_strings(narc: Narc, m: int, i: int) -> typing.List[str]:
     strings = []
     if i >= 0 and m >= 0:
         stream = narc.fileData[m]
@@ -100,7 +95,6 @@ def get_strings(
 
         numSections = stream.read16()
         numEntries = stream.read16()
-        print(numEntries)
         sizeSections[0] = stream.read32()
         unk1 = stream.read32()
 
@@ -151,12 +145,12 @@ def get_strings(
                             and encText[i][j][k] != 0xF000
                             and 0 <= encText[i][j][k] <= 0x10FFFF
                         ):
-                            chars.append(str(encText[i][j][k]))
+                            chars.append(chr(encText[i][j][k]))
                         else:
-                            num = hex(encText[i][j][k])
+                            num = format(encText[i][j][k], "x")
                             for l in range(4 - len(num)):
                                 num = "0" + num
-                            chars.append("\\x" + num)
+                            chars.append(r"\x" + num)
                         string += chars[k]
                 strings.append(string)
                 decText[i].append(chars)
@@ -194,7 +188,6 @@ if __name__ == "__main__":
         system_narc = filedialog.askopenfilename(title=title, filetypes=filetypes)
         assert isfile(system_narc)
         narc = Narc(system_narc)
-        narc.__rshift__("whatever")
         print(get_strings(narc, 0, 0))
         quit()
         title = out("Please select the story.narc")
