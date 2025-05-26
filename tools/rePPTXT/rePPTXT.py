@@ -4,7 +4,6 @@ from os.path import isfile, join, isdir
 from os import listdir
 from io import BytesIO, SEEK_END
 from struct import unpack, pack
-from binascii import unhexlify
 
 Tk().withdraw()
 
@@ -220,7 +219,7 @@ def get_strings(narc: Narc, m: int, i: int) -> typing.List[str]:
                             num = format(encText[i][j][k], "x")
                             for l in range(4 - len(num)):
                                 num = "0" + num
-                            chars.append(r"\x" + num)
+                            chars.append("\\x" + num)
                         string += chars[k]
                 strings.append(string)
                 decText[i].append(chars)
@@ -229,7 +228,8 @@ def get_strings(narc: Narc, m: int, i: int) -> typing.List[str]:
 
 def parse_string(string: str, entry_id: int):
     chars = []
-    for i in range(len(string)):
+    i = 0
+    while i < len(string):
         if string[i] != "\\":
             chars.append(ord(string[i]))
         else:
@@ -240,7 +240,8 @@ def parse_string(string: str, entry_id: int):
                 for j in range(4):
                     tmp += string[i + j + 2]
                 i += 5
-                chars.append(unpack("<H", unhexlify(tmp))[0])
+                chars.append(int(tmp, 16))
+        i += 1
     chars.append(0xFFFF)
     key = keys[entry_id]
     # key = 0x7C89
@@ -261,6 +262,7 @@ def make_section(strings: typing.List[str], numEntries: int):
     if size % 4 == 2:
         size += 2
         tmpKey = keys[numEntries - 1]
+        # tmpKey = 0x7C89
         for i in range(len(data[numEntries - 1])):
             tmpKey = ((tmpKey << 3) | (tmpKey >> 13)) & 0xFFFF
         data[numEntries - 1].append(0xFFFF ^ tmpKey)
@@ -329,7 +331,7 @@ def save_narc():
                             for z in range(numSections):
                                 stream.seek(sectionOffset[z])
                                 sizeSections[z] = stream.read32()
-                            newsizeSections[0] = len(newEntry)
+                            newsizeSections[0] = len(newEntry)  # <- ?
                             stream.seek(4)
                             stream.write32(newsizeSections[0])
                             if numSections == 2:
@@ -419,3 +421,5 @@ if __name__ == "__main__":
     print("Importing files to NARCs...")
 
     save_narc()
+
+    print("All done! Now, reinsert the NARCs into the ROM!")
